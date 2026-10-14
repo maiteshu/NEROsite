@@ -12,14 +12,26 @@ const uploadMiddleware = multer({ dest: 'uploads/' });
 const fs = require('fs');
 
 const salt = bcrypt.genSaltSync(10);
-const secret = '73nsa9fdj3madwk';
+const secret = process.env.JWT_SECRET;
+
+if (!secret) {
+    console.error('Missing required environment variable JWT_SECRET. Set it in the service variables and restart.');
+    process.exit(1);
+}
+
+if (!process.env.MONGO_URI) {
+    console.error('Missing required environment variable MONGO_URI. Set it in the service variables and restart.');
+    process.exit(1);
+}
 
 app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
 app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));
 
-mongoose.connect('mongodb+srv://neroblog:iliketomosaki31@cluster0.tr5srac.mongodb.net/?appName=Cluster0');
+mongoose.connect(process.env.MONGO_URI);
+
+app.get('/', (req, res) => res.json({ status: 'ok', service: 'NEROsite api' }));
 
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
