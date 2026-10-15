@@ -1,6 +1,7 @@
 import {format} from "date-fns";
 import { Link } from "react-router-dom";
 import { API_BASE } from "./config";
+import Avatar from "./avatar";
 
 export default function Post({_id,title,summary,cover,content,createdAt,author}) {
     return(
