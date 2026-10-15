@@ -25,7 +25,9 @@ app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));
 
-mongoose.connect(process.env.MONGODB_URI);
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('Mongo connected'))
+    .catch((err) => console.error('Mongo error:', err.message));
 
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
