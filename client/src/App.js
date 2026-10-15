@@ -10,6 +10,7 @@ import { UserContextProvider } from './usercontext';
 import CreatePost from './pages/createpost';
 import PostPage from './pages/postpage'
 import EditPost from './pages/editpost';
+import SettingsPage from "./pages/settingspage";
 
 function App() {
   return (
@@ -21,7 +22,8 @@ function App() {
        <Route path="/register" element={<RegisterPage />} />
        <Route path="/create" element={<CreatePost />} />
        <Route path="/post/:id" element={<PostPage />} />
-      <Route path="/edit/:id" element={<EditPost />} />
+       <Route path="/edit/:id" element={<EditPost />} />
+       <Route path="/settings" element={<SettingsPage />} />
       </Route>
     </Routes>
     </UserContextProvider>
