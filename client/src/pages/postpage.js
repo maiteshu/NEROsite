@@ -59,7 +59,6 @@ export default function PostPage() {
         <img src={`${API_BASE}/${postInfo.cover}`} alt=""/>
       </div>
       <div className="content" dangerouslySetInnerHTML={{__html:postInfo.content}} />
-            <div className="content" dangerouslySetInnerHTML={{__html:postInfo.content}} />
              <Comments postId={postInfo._id} postAuthorId={postInfo.author._id} />
     </div>
   );

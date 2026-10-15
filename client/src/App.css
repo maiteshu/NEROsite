@@ -64,7 +64,8 @@ div.post div.image{
 
 div.post div.image img{
   width: 100%;
-  object-fit: cover;
+  object-fit: scale-down;
+
 }
 
 div.post div.texts h2{
