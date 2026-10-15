@@ -4,6 +4,7 @@ import {formatISO9075} from "date-fns";
 import {UserContext} from "../usercontext";
 import {API_BASE} from "../config";
 import {Link} from 'react-router-dom';
+import Comments from "../comments";
 
 export default function PostPage() {
   const [postInfo,setPostInfo] = useState(null);
@@ -39,6 +40,8 @@ export default function PostPage() {
         <img src={`${API_BASE}/${postInfo.cover}`} alt=""/>
       </div>
       <div className="content" dangerouslySetInnerHTML={{__html:postInfo.content}} />
+            <div className="content" dangerouslySetInnerHTML={{__html:postInfo.content}} />
+             <Comments postId={postInfo._id} postAuthorId={postInfo.author._id} />
     </div>
   );
 }

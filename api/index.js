@@ -16,6 +16,7 @@ const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const uploadMiddleware = multer({ dest: 'uploads/' });
 const fs = require('fs');
+const Comment = require('./models/Comment');
 
 const salt = bcrypt.genSaltSync(10);
 
@@ -148,6 +149,59 @@ app.get('/post/:id', async (req, res) => {
     const postDoc = await Post.findById(id).populate('author', ['username']);
     res.json(postDoc);
 });
+
+app.get('/post/:id/comments', async (req, res) => {
+    try {
+        const comments = await Comment.find({ post: req.params.id })
+            .populate('author', ['username'])
+            .sort({ createdAt: -1 });
+        res.json(comments);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+app.post('/post/:id/comments', (req, res) => {
+    const { token } = req.cookies;
+    jwt.verify(token, secret, {}, async (err, info) => {
+        if (err) return res.status(401).json('You must be logged in');
+        const content = (req.body.content || '').trim();
+        if (!content) return res.status(400).json('Comment cannot be empty');
+        try {
+            const doc = await Comment.create({
+                post: req.params.id,
+                author: info.id,
+                content,
+            });
+            const comment = await Comment.findById(doc._id).populate('author', ['username']);
+            res.json(comment);
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    });
+});
+
+app.delete('/comments/:commentId', (req, res) => {
+    const { token } = req.cookies;
+    jwt.verify(token, secret, {}, async (err, info) => {
+        if (err) return res.status(401).json('You must be logged in');
+        try {
+            const comment = await Comment.findById(req.params.commentId);
+            if (!comment) return res.status(404).json('Comment not found');
+            const post = await Post.findById(comment.post);
+            const isCommentAuthor = String(comment.author) === String(info.id);
+            const isPostAuthor = post && String(post.author) === String(info.id);
+            if (!isCommentAuthor && !isPostAuthor) {
+                return res.status(403).json('Not allowed');
+            }
+            await comment.deleteOne();
+            res.json('ok');
+        } catch (e) {
+            res.status(500).json({ error: e.message });
+        }
+    });
+});
+
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`API on ${PORT}`));

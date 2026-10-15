@@ -198,3 +198,86 @@ div.content {
   word-wrap: break-word;
 }
 
+div.comments {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid #ddd;
+}
+
+div.comments h3 {
+  margin: 0 0 15px;
+}
+
+
+div.comments form.comment-form textarea {
+  display: block;
+  width: 100%;
+  min-height: 90px;
+  margin-bottom: 8px;
+  padding: 7px;
+  border: 0;
+  border-bottom: 2px solid #fff;
+  border-radius: 5px;
+  background-color: #ddd;
+  font-family: inherit;
+  font-size: 1rem;
+  resize: vertical;
+}
+
+div.comments form.comment-form button {
+  width: 140px;
+  cursor: pointer;
+}
+
+div.comments div.comment-error {
+  margin-top: 8px;
+  color: #c0392b;
+  font-size: .8rem;
+}
+
+
+div.comments div.comment {
+  padding: 15px 0;
+  border-bottom: 1px solid #eee;
+}
+
+div.comments div.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: .8rem;
+}
+
+div.comments div.comment-header strong {
+  color: #333;
+}
+
+
+div.comments div.comment-header time {
+  display: inline;
+  text-align: left;
+  font-size: .7rem;
+  color: #aaa;
+}
+
+
+div.comments button.comment-delete {
+  width: auto;
+  display: inline;
+  margin-left: auto;
+  padding: 0;
+  background: none;
+  color: #c0392b;
+  font-size: .75rem;
+  cursor: pointer;
+}
+
+div.comments button.comment-delete:hover {
+  text-decoration: underline;
+}
+
+div.comments div.comment p {
+  margin: 8px 0 0;
+  line-height: 1.5rem;
+  white-space: pre-wrap;
+}
