@@ -33,6 +33,7 @@ export default function Header() {
       <nav>
         {username && (
           <>
+            <Link to="/settings"><Avatar user={userInfo} size={28} /></Link>
             <Link to="/create">Create new post</Link>
             <a onClick={logout}>Logout</a>
           </>
