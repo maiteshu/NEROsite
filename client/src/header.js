@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useContext, useEffect } from "react";
 import { UserContext } from "./usercontext";
 import { API_BASE } from "./config";
+import Avatar from "./useravatar";
 
 export default function Header() {
   const { setUserInfo, userInfo } = useContext(UserContext);

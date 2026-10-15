@@ -3,7 +3,7 @@ import {format} from "date-fns";
 import {Link} from "react-router-dom";
 import {UserContext} from "./usercontext";
 import {API_BASE} from "./config";
-import Avatar from "./avatar";
+import Avatar from "./useravatar";
 
 export default function Comments({postId, postAuthorId}) {
   const {userInfo} = useContext(UserContext);

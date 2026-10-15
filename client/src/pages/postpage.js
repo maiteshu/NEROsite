@@ -5,7 +5,7 @@ import {API_BASE} from "../config";
 import {Link} from 'react-router-dom';
 import Comments from "../comments";
 import {useParams, useNavigate} from "react-router-dom";
-import Avatar from "../avatar";
+import Avatar from "../useravatar";
 
 export default function PostPage() {
   const [postInfo,setPostInfo] = useState(null);
