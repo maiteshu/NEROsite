@@ -1,3 +1,9 @@
+const secret = process.env.JWT_SECRET;
+const cookieOptions = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+};
 const express = require('express');
 const cors = require('cors');
 const User = require('./models/User');
@@ -12,26 +18,14 @@ const uploadMiddleware = multer({ dest: 'uploads/' });
 const fs = require('fs');
 
 const salt = bcrypt.genSaltSync(10);
-const secret = process.env.JWT_SECRET;
 
-if (!secret) {
-    console.error('Missing required environment variable JWT_SECRET. Set it in the service variables and restart.');
-    process.exit(1);
-}
-
-if (!process.env.MONGO_URI) {
-    console.error('Missing required environment variable MONGO_URI. Set it in the service variables and restart.');
-    process.exit(1);
-}
-
-app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
+app.set('trust proxy', 1);
+app.use(cors({ credentials: true, origin: process.env.CLIENT_URL }));
 app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));
 
-mongoose.connect(process.env.MONGO_URI);
-
-app.get('/', (req, res) => res.json({ status: 'ok', service: 'NEROsite api' }));
+mongoose.connect(process.env.MONGODB_URI);
 
 app.post('/register', async (req, res) => {
     const { username, password } = req.body;
@@ -56,10 +50,10 @@ app.post('/login', async (req, res) => {
     if (passOK) {
         jwt.sign({ username, id: userDoc._id }, secret, {}, (err, token) => {
             if (err) throw err;
-            res.cookie('token', token).json({
-                id: userDoc._id,
-                username,
-            });
+         res.cookie('token', token, cookieOptions).json({
+             id: userDoc._id,
+             username,
+             });
         });
     } else {
         res.status(400).json('Wrong credentials!');
@@ -75,7 +69,7 @@ app.get('/profile', (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
-    res.cookie('token', '').json('ok');
+    res.clearCookie('token', cookieOptions).json('ok');
 });
 
 app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
@@ -153,4 +147,5 @@ app.get('/post/:id', async (req, res) => {
     res.json(postDoc);
 });
 
-app.listen(4000);
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => console.log(`API on ${PORT}`));
