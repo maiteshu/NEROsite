@@ -2,6 +2,7 @@ import {useState} from "react";
 import 'react-quill/dist/quill.snow.css';
 import { Navigate } from "react-router-dom";
 import Editor from "../editor";
+import { API_BASE } from "../config";
 
 
 export default function CreatePost(){
@@ -17,7 +18,7 @@ export default function CreatePost(){
         data.set('summary', summary);
         data.set('content', content);
         data.set('file', files[0]);
-        const response = await fetch('http://localhost:4000/post', {
+        const response = await fetch(`${API_BASE}/post`, {
             method: 'POST',
             body: data,
             credentials:'include',

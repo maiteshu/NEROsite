@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Editor from "../editor";
+import { API_BASE } from "../config";
 import { Navigate, useParams } from "react-router-dom";
 
 export default function EditPost() {
@@ -12,7 +13,7 @@ export default function EditPost() {
         const [redirect, setRedirect]=useState('');
 
         useEffect(() => {
-            fetch('http://localhost:4000/post/'+id)
+            fetch(`${API_BASE}/post/${id}`)
             .then(response => {
                 response.json().then(postInfo => {
                     setTitle(postInfo.title);
@@ -33,7 +34,7 @@ export default function EditPost() {
                 data.set('file', files[0]);
             }
             
-            await fetch('http://localhost:4000/post', {
+            await fetch(`${API_BASE}/post`, {
                 method: 'PUT',
                 body: data,
                 credentials:'include',
