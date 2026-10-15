@@ -202,6 +202,32 @@ app.delete('/comments/:commentId', (req, res) => {
     });
 });
 
+app.delete('/post/:id', (req, res) => {
+    const { token } = req.cookies;
+    jwt.verify(token, secret, {}, async (err, info) => {
+        if (err) return res.status(401).json('You must be logged in');
+        try {
+            const postDoc = await Post.findById(req.params.id);
+            if (!postDoc) return res.status(404).json('Post not found');
+
+            const isAuthor = String(postDoc.author) === String(info.id);
+            if (!isAuthor) return res.status(403).json('You are not the author of this post!');
+
+            await Comment.deleteMany({ post: postDoc._id });
+
+            if (postDoc.cover) {
+                fs.unlink(require('path').join(__dirname, postDoc.cover), () => {});
+            }
+
+            await postDoc.deleteOne();
+            res.json('ok');
+        } catch (e) {
+            console.error('DELETE /post error:', e);
+            res.status(500).json({ error: e.message });
+        }
+    });
+});
+
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`API on ${PORT}`));

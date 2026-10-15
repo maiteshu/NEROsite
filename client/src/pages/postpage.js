@@ -5,11 +5,27 @@ import {UserContext} from "../usercontext";
 import {API_BASE} from "../config";
 import {Link} from 'react-router-dom';
 import Comments from "../comments";
+import {useParams, useNavigate} from "react-router-dom";
 
 export default function PostPage() {
   const [postInfo,setPostInfo] = useState(null);
   const {userInfo} = useContext(UserContext);
   const {id} = useParams();
+    const navigate = useNavigate();
+
+  async function deletePost() {
+    if (!window.confirm('Delete this post? This cannot be undone.')) return;
+    const res = await fetch(`${API_BASE}/post/${id}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    });
+    if (res.ok) {
+      navigate('/');
+    } else {
+      alert('Could not delete the post.');
+    }
+  }
+  
   useEffect(() => {
     fetch(`${API_BASE}/post/${id}`)
       .then(response => {
@@ -34,7 +50,11 @@ export default function PostPage() {
             </svg>
             Edit this post
           </Link>
+          <button className="delete-btn" onClick={deletePost}>
+            Delete this post
+          </button>
         </div>
+
       )}
       <div className="image">
         <img src={`${API_BASE}/${postInfo.cover}`} alt=""/>
