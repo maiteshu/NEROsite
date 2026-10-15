@@ -295,3 +295,58 @@ div.edit-row button.delete-btn {
   font-size: 1rem;
   vertical-align: top;
 }
+
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.avatar-fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #5990a7;
+  color: #fff;
+  font-weight: bold;
+}
+
+div.post-page div.author {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+form.settings {
+  max-width: 400px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+form.settings div.settings-avatar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+form.settings input[type="file"] {
+  background: none;
+  margin: 0 auto 10px;
+  width: auto;
+}
+
+form.settings button {
+  margin: 0 auto;
+  cursor: pointer;
+}
+
+form.settings button:disabled {
+  opacity: .5;
+  cursor: default;
+}
+
+form.settings div.settings-message {
+  margin-top: 10px;
+  font-size: .85rem;
+}

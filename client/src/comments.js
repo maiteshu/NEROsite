@@ -3,6 +3,7 @@ import {format} from "date-fns";
 import {Link} from "react-router-dom";
 import {UserContext} from "./usercontext";
 import {API_BASE} from "./config";
+import Avatar from "./avatar";
 
 export default function Comments({postId, postAuthorId}) {
   const {userInfo} = useContext(UserContext);
@@ -68,6 +69,7 @@ export default function Comments({postId, postAuthorId}) {
       {comments.map(c => (
         <div className="comment" key={c._id}>
           <div className="comment-header">
+            <Avatar user={c.author} size={28} />
             <strong>@{c.author?.username}</strong>
             <time>{format(new Date(c.createdAt), 'd MMM, yyyy HH:mm')}</time>
             {(userInfo?.id === c.author?._id || userInfo?.id === postAuthorId) && (

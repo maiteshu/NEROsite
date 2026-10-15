@@ -5,6 +5,7 @@ import {API_BASE} from "../config";
 import {Link} from 'react-router-dom';
 import Comments from "../comments";
 import {useParams, useNavigate} from "react-router-dom";
+import Avatar from "../avatar";
 
 export default function PostPage() {
   const [postInfo,setPostInfo] = useState(null);
@@ -40,7 +41,9 @@ export default function PostPage() {
     <div className="post-page">
       <h1>{postInfo.title}</h1>
       <time>{formatISO9075(new Date(postInfo.createdAt))}</time>
-      <div className="author">by @{postInfo.author.username}</div>
+      <div className="author">
+        <Avatar user={postInfo.author} size={24} />by @{postInfo.author.username}
+        </div>
       {userInfo.id === postInfo.author._id && (
         <div className="edit-row">
           <Link className="edit-btn" to={`/edit/${postInfo._id}`}>

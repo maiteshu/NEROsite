@@ -15,8 +15,17 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const uploadMiddleware = multer({ dest: 'uploads/' });
+const avatarUpload = multer({
+    dest: 'uploads/',
+    limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB
+    fileFilter: (req, file, cb) => {
+        if (/^image\/(png|jpe?g|webp|gif)$/.test(file.mimetype)) cb(null, true);
+        else cb(new Error('Only PNG, JPG, WEBP or GIF images are allowed'));
+    },
+});
 const fs = require('fs');
 const Comment = require('./models/Comment');
+const path = require('path');
 
 const salt = bcrypt.genSaltSync(10);
 
@@ -56,6 +65,7 @@ app.post('/login', async (req, res) => {
          res.cookie('token', token, cookieOptions).json({
              id: userDoc._id,
              username,
+             avatar: userDoc.avatar || null,
              });
         });
     } else {
@@ -65,9 +75,10 @@ app.post('/login', async (req, res) => {
 
 app.get('/profile', (req, res) => {
     const { token } = req.cookies;
-    jwt.verify(token, secret, {}, (err, info) => {
+    jwt.verify(token, secret, {}, async (err, info) => {
         if (err) return res.status(400).json({ error: 'Invalid token' });
-        res.json(info);
+        const user = await User.findById(info.id);
+        res.json({ id: info.id, username: info.username, avatar: user?.avatar || null });
     });
 });
 
@@ -138,7 +149,7 @@ app.put('/post', uploadMiddleware.single('file'), async (req, res) => {
 app.get('/post', async (req, res) => {
     res.json(
         await Post.find()
-            .populate('author', ['username'])
+            .populate('author', ['username', 'avatar'])
             .sort({ createdAt: -1 })
             .limit(20)
     );
@@ -146,14 +157,14 @@ app.get('/post', async (req, res) => {
 
 app.get('/post/:id', async (req, res) => {
     const { id } = req.params;
-    const postDoc = await Post.findById(id).populate('author', ['username']);
+    const postDoc = await Post.findById(id).populate('author', ['username', 'avatar']);
     res.json(postDoc);
 });
 
 app.get('/post/:id/comments', async (req, res) => {
     try {
         const comments = await Comment.find({ post: req.params.id })
-            .populate('author', ['username'])
+            .populate('author', ['username', 'avatar'])
             .sort({ createdAt: -1 });
         res.json(comments);
     } catch (e) {
@@ -173,7 +184,7 @@ app.post('/post/:id/comments', (req, res) => {
                 author: info.id,
                 content,
             });
-            const comment = await Comment.findById(doc._id).populate('author', ['username']);
+            const comment = await Comment.findById(doc._id).populate('author', ['username', 'avatar']);
             res.json(comment);
         } catch (e) {
             res.status(500).json({ error: e.message });
@@ -228,6 +239,36 @@ app.delete('/post/:id', (req, res) => {
     });
 });
 
+app.put('/profile/avatar', (req, res) => {
+    avatarUpload.single('file')(req, res, (uploadErr) => {
+        if (uploadErr) return res.status(400).json(uploadErr.message);
+        if (!req.file) return res.status(400).json('No file uploaded');
+
+        const { token } = req.cookies;
+        jwt.verify(token, secret, {}, async (err, info) => {
+            if (err) {
+                fs.unlink(req.file.path, () => {});
+                return res.status(401).json('You must be logged in');
+            }
+            try {
+                const ext = req.file.mimetype.split('/')[1].replace('jpeg', 'jpg');
+                const newPath = (req.file.path + '.' + ext).replace(/\\/g, '/');
+                fs.renameSync(req.file.path, newPath);
+
+                const user = await User.findById(info.id);
+                if (user.avatar) {
+                    fs.unlink(path.join(__dirname, user.avatar), () => {}); // delete old one
+                }
+                user.avatar = newPath;
+                await user.save();
+                res.json({ avatar: newPath });
+            } catch (e) {
+                console.error('PUT /profile/avatar error:', e);
+                res.status(500).json({ error: e.message });
+            }
+        });
+    });
+});
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`API on ${PORT}`));
