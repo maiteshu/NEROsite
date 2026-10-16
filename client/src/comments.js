@@ -71,7 +71,7 @@ export default function Comments({postId, postAuthorId}) {
           <div className="comment-header">
             <Avatar user={c.author} size={28} />
             <strong>
-             <Link to={`/user/${encodeURIComponent(comments.author?.username)}`}>@{comments.author?.username}</Link>
+             <Link to={`/user/${encodeURIComponent(c.author?.username)}`}>@{c.author?.username}</Link>
             </strong>
             <time>{format(new Date(c.createdAt), 'd MMM, yyyy HH:mm')}</time>
             {(userInfo?.id === c.author?._id || userInfo?.id === postAuthorId) && (

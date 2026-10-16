@@ -16,10 +16,9 @@ const app = express();
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const multer = require('multer');
-const uploadMiddleware = multer({ dest: 'uploads/' });
-const avatarUpload = multer({
+const imageUpload = multer({
     dest: 'uploads/',
-    limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB
+    limits: { fileSize: 2 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         if (/^image\/(png|jpe?g|webp|gif)$/.test(file.mimetype)) cb(null, true);
         else cb(new Error('Only PNG, JPG, WEBP or GIF images are allowed!'));
@@ -32,6 +31,13 @@ const path = require('path');
 const salt = bcrypt.genSaltSync(10);
 
 const POSTS_PER_PAGE = 10
+
+function saveWithExt(file) {
+    const ext = file.mimetype.split('/')[1].replace('jpeg', 'jpg');
+    const newPath = `${file.path}.${ext}`.replace(/\\/g, '/');
+    fs.renameSync(file.path, newpath);
+    return newPath;
+}
 
 app.set('trust proxy', 1);
 app.use(cors({ credentials: true, origin: process.env.CLIENT_URL }));
@@ -90,30 +96,23 @@ app.post('/logout', (req, res) => {
     res.clearCookie('token', cookieOptions).json('ok');
 });
 
-app.post('/post', uploadMiddleware.single('file'), async (req, res) => {
-    const { originalname, path } = req.file;
-    const parts = originalname.split('.');
-    const ext = parts[parts.length - 1];
-    const newPath = path + '.' + ext;
-    fs.renameSync(path, newPath);
+app.post('/post', imageUpload.single('file'), (req, res) => {
+    if (!req.file) return res.status(400).json('A cover image is required');
+    const cover = saveWithExt(req.file);
 
-    const { token } = req.cookies;
-    jwt.verify(token, secret, {}, async (err, info) => {
-        if (err) throw err;
+    jwt.verify(req.cookies.token, secret, {}, async (err, info) => {
+        if (err) {
+            fs.unlink(cover, () => {});
+            return res.status(401).json('You must be logged in');
+        }
         const { title, summary, content } = req.body;
-        const PostDoc = await Post.create({
-            title,
-            summary,
-            content,
-            cover: newPath,
-            author: info.id,
-        });
-        res.json(PostDoc);
+        const postDoc = await Post.create({ title, summary, content, cover, author: info.id });
+        res.json(postDoc);
     });
 });
 
-app.put('/post', uploadMiddleware.single('file'), async (req, res) => {
-    let newPath = null;
+app.put('/post', imageUpload.single('file'), async (req, res) => {
+    const newPath = req.file ? saveWithExt(req.file) : null;
     if (req.file) {
         const { originalname, path } = req.file;
         const parts = originalname.split('.');
@@ -253,34 +252,25 @@ app.delete('/post/:id', (req, res) => {
     });
 });
 
-app.put('/profile/avatar', (req, res) => {
-    avatarUpload.single('file')(req, res, (uploadErr) => {
-        if (uploadErr) return res.status(400).json(uploadErr.message);
-        if (!req.file) return res.status(400).json('No file uploaded');
+app.put('/profile/avatar', imageUpload.single('file'), (req, res) => {
+    if (!req.file) return res.status(400).json('No file uploaded');
 
-        const { token } = req.cookies;
-        jwt.verify(token, secret, {}, async (err, info) => {
-            if (err) {
-                fs.unlink(req.file.path, () => {});
-                return res.status(401).json('You must be logged in');
-            }
-            try {
-                const ext = req.file.mimetype.split('/')[1].replace('jpeg', 'jpg');
-                const newPath = (req.file.path + '.' + ext).replace(/\\/g, '/');
-                fs.renameSync(req.file.path, newPath);
-
-                const user = await User.findById(info.id);
-                if (user.avatar) {
-                    fs.unlink(path.join(__dirname, user.avatar), () => {}); // delete old one
-                }
-                user.avatar = newPath;
-                await user.save();
-                res.json({ avatar: newPath });
-            } catch (e) {
-                console.error('PUT /profile/avatar error:', e);
-                res.status(500).json({ error: e.message });
-            }
-        });
+    jwt.verify(req.cookies.token, secret, {}, async (err, info) => {
+        if (err) {
+            fs.unlink(req.file.path, () => {});
+            return res.status(401).json('You must be logged in!');
+        }
+        try {
+            const newPath = saveWithExt(req.file);
+            const user = await User.findById(info.id);
+            if (user.avatar) fs.unlink(path.join(__dirname, user.avatar), () => {});
+            user.avatar = newPath;
+            await user.save();
+            res.json({ avatar: newPath});
+        } catch (e) {
+            console.error('PUT /profile/avatar error', e);
+            res.status(500).json({ error : e.message});
+        }
     });
 });
 
@@ -301,6 +291,11 @@ app.get('/user/:username', async (req, res) => {
     }
 });
 
+app.use((err, req, res, next) => {
+    if (req.file) fs.unlink(req.file.path, () => {});
+    const msg = err.code === 'LIMIT_FILE_SIZE' ? 'The image must be 2 MB or smaller!' : err.message;
+    res.status(400).json(msg || 'Upload failed!')
+})
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`API on ${PORT}`));
