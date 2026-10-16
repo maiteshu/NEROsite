@@ -18,6 +18,7 @@ export default function Post({_id,title,summary,cover,content,createdAt,author})
         </Link>
        
        <p className="info">
+        <Avatar user={author} size={20} />
         <Link className="author" to={`/user/${encodeURIComponent(author.username)}`}>{author.username}</Link>
         <time>{format(new Date(createdAt), 'd MMM, yyyy HH:mm')}</time>
        </p>

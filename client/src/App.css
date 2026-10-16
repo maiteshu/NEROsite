@@ -64,7 +64,7 @@ div.post div.image{
 
 div.post div.image img{
   width: 100%;
-  object-fit: scale-down;
+  object-fit: contain;
 
 }
 
@@ -388,4 +388,64 @@ div.post-page div.author a {
 div.comments div.comment-header a:hover,
 div.post-page div.author a:hover {
   text-decoration: underline;
+}
+
+div.draft-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+  font-size: .75rem;
+  color: #888;
+}
+
+div.draft-status button.draft-discard {
+  width: auto;
+  display: inline;
+  padding: 0;
+  background: none;
+  color: #c0392b;
+  font-size: .75rem;
+  cursor: pointer;
+}
+
+nav.pagination {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 40px 0;
+}
+
+nav.pagination a,
+nav.pagination span {
+  min-width: 36px;
+  padding: 7px 10px;
+  text-align: center;
+  font-size: .85rem;
+  border-radius: 5px;
+  text-decoration: none;
+}
+
+nav.pagination a {
+  background-color: #ddd;
+  color: #333;
+}
+
+nav.pagination a:hover {
+  background-color: #c9c9c9;
+}
+
+nav.pagination a.current {
+  background-color: #5990a7;
+  color: #fff;
+  font-weight: bold;
+}
+
+nav.pagination span.disabled {
+  color: #bbb;
+}
+
+nav.pagination span.gap {
+  color: #888;
 }

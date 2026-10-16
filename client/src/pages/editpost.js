@@ -9,7 +9,6 @@ export default function EditPost() {
         const [summary,setSummary]=useState('');
         const [content,setContent]=useState('');
         const [files, setFile]=useState('');
-        const [cover, setCover]=useState('');
         const [redirect, setRedirect]=useState('');
 
         useEffect(() => {
@@ -56,7 +55,7 @@ export default function EditPost() {
             onChange={ev => setSummary(ev.target.value)}/>
             <input type="file"
             onChange={ev => setFile(ev.target.files)}/>
-\           <Editor onChange={setContent} value={content} />
+            <Editor onChange={setContent} value={content} />
             <button style={{marginTop:'5px'}}>Update post</button>
         </form>
     )

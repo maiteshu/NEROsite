@@ -31,6 +31,8 @@ const path = require('path');
 
 const salt = bcrypt.genSaltSync(10);
 
+const POSTS_PER_PAGE = 10
+
 app.set('trust proxy', 1);
 app.use(cors({ credentials: true, origin: process.env.CLIENT_URL }));
 app.use(express.json());
@@ -149,12 +151,22 @@ app.put('/post', uploadMiddleware.single('file'), async (req, res) => {
 });
 
 app.get('/post', async (req, res) => {
-    res.json(
-        await Post.find()
+    try {
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const total = await Post.countDocuments();
+        const totalPages = Math.max(Math.ceil(total / POSTS_PER_PAGE), 1);
+
+        const posts = await Post.find()
             .populate('author', ['username', 'avatar'])
-            .sort({ createdAt: -1 })
-            .limit(20)
-    );
+            .sort({ createdAt: -1, _id: -1 }) 
+            .skip((page - 1) * POSTS_PER_PAGE)
+            .limit(POSTS_PER_PAGE);
+
+        res.json({ posts, page, totalPages, total });
+    } catch (e) {
+        console.error('GET /post error:', e);
+        res.status(500).json({ error: e.message });
+    }
 });
 
 app.get('/post/:id', async (req, res) => {
@@ -288,6 +300,7 @@ app.get('/user/:username', async (req, res) => {
         res.status(500).json({ error: e.message });
     }
 });
+
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log(`API on ${PORT}`));
