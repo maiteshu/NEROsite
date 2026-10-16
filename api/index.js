@@ -22,7 +22,7 @@ const avatarUpload = multer({
     limits: { fileSize: 2 * 1024 * 1024 }, // 2 MB
     fileFilter: (req, file, cb) => {
         if (/^image\/(png|jpe?g|webp|gif)$/.test(file.mimetype)) cb(null, true);
-        else cb(new Error('Only PNG, JPG, WEBP or GIF images are allowed'));
+        else cb(new Error('Only PNG, JPG, WEBP or GIF images are allowed!'));
     },
 });
 const fs = require('fs');
@@ -38,7 +38,7 @@ app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));
 
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('Mongo connected'))
+    .then(() => console.log('Mongo connected!'))
     .catch((err) => console.error('Mongo error:', err.message));
 
 app.post('/register', async (req, res) => {
@@ -179,7 +179,7 @@ app.post('/post/:id/comments', (req, res) => {
     jwt.verify(token, secret, {}, async (err, info) => {
         if (err) return res.status(401).json('You must be logged in');
         const content = (req.body.content || '').trim();
-        if (!content) return res.status(400).json('Comment cannot be empty');
+        if (!content) return res.status(400).json('Comment cannot be empty!');
         try {
             const doc = await Comment.create({
                 post: req.params.id,
@@ -197,7 +197,7 @@ app.post('/post/:id/comments', (req, res) => {
 app.delete('/comments/:commentId', (req, res) => {
     const { token } = req.cookies;
     jwt.verify(token, secret, {}, async (err, info) => {
-        if (err) return res.status(401).json('You must be logged in');
+        if (err) return res.status(401).json('You must be logged in!');
         try {
             const comment = await Comment.findById(req.params.commentId);
             if (!comment) return res.status(404).json('Comment not found');
@@ -270,6 +270,23 @@ app.put('/profile/avatar', (req, res) => {
             }
         });
     });
+});
+
+app.get('/user/:username', async (req, res) => {
+    try {
+        const user = await User.findOne({ username: req.params.username })
+            .select('username avatar createdAt');
+        if (!user) return res.status(404).json('User not found!');
+
+        const posts = await Post.find({ author: user._id })
+            .populate('author', ['username', 'avatar'])
+            .sort({ createdAt: -1 });
+
+        res.json({ user, posts });
+    } catch (e) {
+        console.error('GET /user error:', e);
+        res.status(500).json({ error: e.message });
+    }
 });
 
 const PORT = process.env.PORT || 4000;

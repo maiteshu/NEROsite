@@ -350,3 +350,42 @@ form.settings div.settings-message {
   margin-top: 10px;
   font-size: .85rem;
 }
+
+div.profile-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+div.profile-head h1 {
+  margin: 10px 0 0;
+}
+
+div.profile-head p.profile-meta {
+  margin: 4px 0 10px;
+  color: #888;
+  font-size: .85rem;
+}
+
+div.profile-head a.profile-edit {
+  color: #5990a7;
+  font-size: .85rem;
+}
+
+p.profile-empty {
+  text-align: center;
+  color: #888;
+}
+
+div.comments div.comment-header a,
+div.post-page div.author a {
+  color: #333;
+  text-decoration: none;
+}
+
+div.comments div.comment-header a:hover,
+div.post-page div.author a:hover {
+  text-decoration: underline;
+}

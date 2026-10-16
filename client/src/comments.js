@@ -70,7 +70,9 @@ export default function Comments({postId, postAuthorId}) {
         <div className="comment" key={c._id}>
           <div className="comment-header">
             <Avatar user={c.author} size={28} />
-            <strong>@{c.author?.username}</strong>
+            <strong>
+             <Link to={`/user/${encodeURIComponent(comments.author?.username)}`}>@{comments.author?.username}</Link>
+            </strong>
             <time>{format(new Date(c.createdAt), 'd MMM, yyyy HH:mm')}</time>
             {(userInfo?.id === c.author?._id || userInfo?.id === postAuthorId) && (
               <button className="comment-delete" onClick={() => deleteComment(c._id)}>

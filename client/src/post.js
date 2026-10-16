@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { API_BASE } from "./config";
 import Avatar from "./useravatar";
 
-console.log('Avatar is:', Avatar);
 
 export default function Post({_id,title,summary,cover,content,createdAt,author}) {
     return(
@@ -19,7 +18,7 @@ export default function Post({_id,title,summary,cover,content,createdAt,author})
         </Link>
        
        <p className="info">
-        <a className="author">{author.username}</a>
+        <Link className="author" to={`/user/${encodeURIComponent(author.username)}`}>{author.username}</Link>
         <time>{format(new Date(createdAt), 'd MMM, yyyy HH:mm')}</time>
        </p>
        <p className="summary">{summary}</p>  

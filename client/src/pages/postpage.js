@@ -42,7 +42,8 @@ export default function PostPage() {
       <h1>{postInfo.title}</h1>
       <time>{formatISO9075(new Date(postInfo.createdAt))}</time>
       <div className="author">
-        <Avatar user={postInfo.author} size={24} />by @{postInfo.author.username}
+        <Avatar user={postInfo.author} size={24} /> by{' '}
+        <Link to={`/user/${encodeURIComponent(postInfo.author.username)}`}>@{postInfo.author.username}</Link>
         </div>
       {userInfo.id === postInfo.author._id && (
         <div className="edit-row">
