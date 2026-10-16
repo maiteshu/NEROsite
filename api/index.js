@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const secret = process.env.JWT_SECRET;
 const cookieOptions = {
     httpOnly: true,
@@ -74,13 +76,13 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/profile', (req, res) => {
-    const { token } = req.cookies;
-    jwt.verify(token, secret, {}, async (err, info) => {
-        if (err) return res.status(400).json({ error: 'Invalid token' });
-        const user = await User.findById(info.id);
-        res.json({ id: info.id, username: info.username, avatar: user?.avatar || null });
-    });
-});
+       const { token } = req.cookies;
+       jwt.verify(token, secret, {}, async (err, info) => {
+           if (err) return res.status(400).json({ error: 'Invalid token' });
+           const user = await User.findById(info.id);
+           res.json({ id: info.id, username: info.username, avatar: user?.avatar || null });
+       });
+   });
 
 app.post('/logout', (req, res) => {
     res.clearCookie('token', cookieOptions).json('ok');
