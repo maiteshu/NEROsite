@@ -98,54 +98,60 @@ app.post('/logout', (req, res) => {
 
 app.post('/post', imageUpload.single('file'), (req, res) => {
     if (!req.file) return res.status(400).json('A cover image is required');
-    const cover = saveWithExt(req.file);
 
     jwt.verify(req.cookies.token, secret, {}, async (err, info) => {
         if (err) {
-            fs.unlink(cover, () => {});
+            fs.unlink(req.file.path, () => {});
             return res.status(401).json('You must be logged in');
         }
-        const { title, summary, content } = req.body;
-        const postDoc = await Post.create({ title, summary, content, cover, author: info.id });
-        res.json(postDoc);
+        try {
+            const cover = saveWithExt(req.file);
+            const { title, summary, content } = req.body;
+            const postDoc = await Post.create({ title, summary, content, cover, author: info.id });
+            res.json(postDoc);
+        } catch (e) {
+            console.error('POST /post error:', e);
+            res.status(500).json({ error: e.message });
+        }
     });
 });
 
-app.put('/post', imageUpload.single('file'), async (req, res) => {
-    const newPath = req.file ? saveWithExt(req.file) : null;
-    if (req.file) {
-        const { originalname, path } = req.file;
-        const parts = originalname.split('.');
-        const ext = parts[parts.length - 1];
-        newPath = path + '.' + ext; 
-        fs.renameSync(path, newPath);
-    }
-
-    const { token } = req.cookies;
-    jwt.verify(token, secret, {}, async (err, info) => {
-        if (err) throw err;
-        
-        const { id, title, summary, content } = req.body;
-        const postDoc = await Post.findById(id); 
-        
-        if (!postDoc) {
-            return res.status(404).json('Post not found');
+app.put('/post', imageUpload.single('file'), (req, res) => {
+    jwt.verify(req.cookies.token, secret, {}, async (err, info) => {
+        if (err) {
+            if (req.file) fs.unlink(req.file.path, () => {});
+            return res.status(401).json('You must be logged in');
         }
+        try {
+            const { id, title, summary, content } = req.body;
+            const postDoc = await Post.findById(id);
 
-        const isAuthor = JSON.stringify(postDoc.author) === JSON.stringify(info.id);
-        if (!isAuthor) {
-            return res.status(400).json('You are not the author of this post!');
+            if (!postDoc) {
+                if (req.file) fs.unlink(req.file.path, () => {});
+                return res.status(404).json('Post not found');
+            }
+            if (String(postDoc.author) !== String(info.id)) {
+                if (req.file) fs.unlink(req.file.path, () => {});
+                return res.status(403).json('You are not the author of this post!');
+            }
+
+            // only touch the disk once we know the edit is allowed
+            if (req.file) {
+                const oldCover = postDoc.cover;
+                postDoc.cover = saveWithExt(req.file);
+                if (oldCover) fs.unlink(path.join(__dirname, oldCover), () => {});
+            }
+
+            postDoc.title = title;
+            postDoc.summary = summary;
+            postDoc.content = content;
+            await postDoc.save();
+
+            res.json(postDoc);
+        } catch (e) {
+            console.error('PUT /post error:', e);
+            res.status(500).json({ error: e.message });
         }
-
-        await postDoc.updateOne({
-            title,
-            summary,
-            content,
-            cover: newPath ? newPath : postDoc.cover, 
-        });
-
-        const updatedPost = await Post.findById(id);
-        res.json(updatedPost);
     });
 });
 

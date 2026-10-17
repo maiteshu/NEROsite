@@ -6,7 +6,7 @@ import {API_BASE} from "../config";
 import {UserContext} from "../usercontext";
 
 const ALLOWED_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
-const MAX_SIZE = 2 * 1024 * 1024; // must match the API limit (2 MB)
+const MAX_SIZE = 2 * 1024 * 1024;
 
 const isEmpty = (title, summary, content) =>
   !title.trim() && !summary.trim() && !content.replace(/<[^>]*>/g, '').trim();
@@ -24,7 +24,7 @@ export default function CreatePost() {
   const [draftLoaded, setDraftLoaded] = useState(false);
   const [draftSaved, setDraftSaved] = useState(false);
 
-  // ---------- draft system ----------
+  //draft system
   const draftKey = userInfo?.id ? `draft:new-post:${userInfo.id}` : null;
 
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function CreatePost() {
     setDraftSaved(false);
   }
 
-  // ---------- cover image ----------
+  //cover image
   useEffect(() => {
     return () => { if (preview) URL.revokeObjectURL(preview); };
   }, [preview]);
@@ -91,7 +91,7 @@ export default function CreatePost() {
     setPreview(URL.createObjectURL(file));
   }
 
-  // ---------- create post ----------
+  //create post
   async function createNewPost(ev) {
     ev.preventDefault();
     if (submitting) return;
@@ -151,8 +151,6 @@ return (
         accept="image/png,image/jpeg,image/webp,image/gif"
         onChange={onCoverChange}
       />
-      {coverError && <div className="comment-error">{coverError}</div>}
-      {preview && <img className="cover-preview" src={preview} alt="Cover preview" />}
 
       <Editor value={content} onChange={setContent} />
 
