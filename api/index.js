@@ -35,7 +35,7 @@ const POSTS_PER_PAGE = 10
 function saveWithExt(file) {
     const ext = file.mimetype.split('/')[1].replace('jpeg', 'jpg');
     const newPath = `${file.path}.${ext}`.replace(/\\/g, '/');
-    fs.renameSync(file.path, newpath);
+    fs.renameSync(file.path, newPath);
     return newPath;
 }
 
